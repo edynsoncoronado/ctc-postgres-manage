@@ -2,8 +2,9 @@ FROM postgres:latest
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
   openssh-server \
-  && /etc/init.d/ssh start
+  && rm -rf /var/lib/apt/lists/*
 
 COPY ./app /home/app
 WORKDIR /home/app
 RUN ./foobob_script.sh
+RUN service ssh restart

@@ -21,15 +21,36 @@ def db_manage_backup():
     db_manage.execute_main('backup')
     return True
 
+celery.conf.beat_schedule = {
+    'db_manage_backup': {
+        'task': "db_manage_backup",
+        'schedule': crontab(hour=22, minute=50)
+    },
+}
+
 @celery.task(name="db_manage_restore1")
 def db_manage_restore1():
     db_manage.execute_main('restore1')
     return True
 
+celery.conf.beat_schedule = {
+    'db_manage_restore1': {
+        'task': "db_manage_restore1",
+        'schedule': crontab(hour=23, minute=00)
+    },
+}
+
 @celery.task(name="db_manage_restore2")
 def db_manage_restore2():
     db_manage.execute_main('restore2')
     return True
+
+celery.conf.beat_schedule = {
+    'db_manage_restore2': {
+        'task': "db_manage_restore2",
+        'schedule': crontab(hour=23, minute=10)
+    },
+}
 
 @celery.task(name="db_manage_restore3")
 def db_manage_restore3():
@@ -37,8 +58,8 @@ def db_manage_restore3():
     return True
 
 celery.conf.beat_schedule = {
-    'db_manage_backup': {
-        'task': "db_manage_backup",
-        'schedule': crontab(hour=22, minute=50)
+    'db_manage_restore3': {
+        'task': "db_manage_restore3",
+        'schedule': crontab(hour=23, minute=30)
     },
 }
