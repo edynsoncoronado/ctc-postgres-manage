@@ -2,6 +2,76 @@ version: "3.9"
 
 services:
   app:
-    build: .
+    build:
+      dockerfile: Dockerfile.app
     volumes:
-      - ./app:/code/app
+      - ./app/:/home/app/
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - redis
+    command: uvicorn main:app --reload --host 0.0.0.0
+    networks:
+      - ctc_network
+  db:
+    build: 
+      dockerfile: Dockerfile.db
+    volumes:
+      - ./app/:/home/app/
+    environment:
+      - POSTGRES_PASSWORD=easy
+    ports:
+      - "22"
+    networks:
+      ctc_network:
+        aliases:
+          - app2
+  redis:
+    image: redis:6-alpine
+    networks:
+      - ctc_network
+  celery_worker:
+    build:
+      dockerfile: Dockerfile.app
+    command: celery -A worker.celery worker --loglevel=info
+    volumes:
+      - ./app/:/home/app/
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - ./.env
+    depends_on:
+      - app
+      - redis
+    networks:
+      - ctc_network
+  flower:
+    build:
+      dockerfile: Dockerfile.app
+    command: celery -A worker.celery flower --port=5555
+    volumes:
+      - ./app/:/home/app/
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - ./.env
+    depends_on:
+      - app
+      - redis
+    ports:
+      - 5557:5555
+    networks:
+      - ctc_network
+
+
+networks:
+  ctc_network:
+    name: ctc_net
+    driver: bridge
+    ipam:
+      driver: default

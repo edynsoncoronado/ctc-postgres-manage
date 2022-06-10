@@ -1,0 +1,9 @@
+FROM postgres:latest
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+  openssh-server \
+  && /etc/init.d/ssh start
+
+COPY ./app /home/app
+WORKDIR /home/app
+RUN ./foobob_script.sh

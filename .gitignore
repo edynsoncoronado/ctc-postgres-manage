@@ -112,7 +112,6 @@ ENV/
 *.sqlite3
 media/
 *.pyc
-*.db
 *.pid
 
 # pycharm
